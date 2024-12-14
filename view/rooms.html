@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1,user-scalable=no,maximum-scale=1,minimum-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="ScreenOrientation" content="autoRotate:disabled" />
+    <meta name="description" content="An implementation of chess." />
+    <title>Banzai Chess Game Room</title>
+    <link rel="stylesheet" href="./static/css/index.css" />
+    <link rel="stylesheet" href="./static/css/chessboard-1.0.0.css" />
+</head> 
+<style>
+
+    div#container {
+        display: flex;
+        height: auto;
+        width: calc(100% - 4em);
+        
+        /* align-items: flex-start; /* Allinea gli elementi in alto */
+    }
+            
+    #left-column, #central-column #right-column {
+        /*flex: 1;*/
+        display: flex;
+        flex-direction: column;
+        align-items: center;           
+    }
+    #left-column {
+        flex-basis: 50%; /* Larghezza della colonna di sinistra */
+        justify-content: flex-start;
+        justify-self: center;
+        align-items: center;          
+    }
+   
+    
+    div#board {
+        /*margin-right: -10%;*/
+        margin-left: 0%;
+        margin-top: -4.5%;
+        width: 80%;
+        height: 80%;
+        border-radius: 5px;
+    }
+    div#room-join-state {       
+        margin-top: 2%;
+        margin-left: -22%;
+        /* Spazio tra il label e il div status */                     
+    }                         
+    #central-column {
+        flex-basis: 30%; /* Larghezza della colonna di sinistra */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        
+    }
+
+    #right-column {
+        flex-basis: 20%; /* Larghezza della colonna di sinistra */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+            
+    }
+
+    #central-buttons {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        margin-top: 5%;
+        margin-left: 5%;
+    }  
+    .central-button {
+        background-color: var(--secondary-background-color);
+        border: 1px solid var(--secondary-background-color);
+        color: var(--special-text-color);
+        width: 150px;     
+        border: none;
+        cursor: pointer; 
+    }
+    .central-button:hover {
+        background-color: var(--secondary-hover-color);
+        border: none;
+    }
+    #right-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        margin-top: -25%;
+        margin-left: 5%;
+        
+    }
+    .right-button {
+        width: 130px;
+        background-color: var(--secondary-background-color);
+        border: 1px solid var(--secondary-background-color);
+        color: var(--special-text-color);
+        border: none;
+        cursor: pointer;
+    }
+    .right-button:hover {
+        background-color: rgb(47,54,61);
+        /*color: black;*/
+    }
+
+    #game-controls {
+        width: 90%; /* Allinea e centra i controlli di gioco */
+    }
+
+    #game-controls .control-button {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+        padding: 10px;
+        text-align: center;
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        cursor: pointer;
+    }
+
+    #move-history {
+        width: 100%;
+        margin-top: -4%;
+        border: 1px solid rgb(47,54,61);
+        border-radius: 5px;
+        padding: 10px;
+        background-color: #b4b4b4;
+        height: 200px;
+        overflow-y: auto;  /*Per abilitare lo scroll */
+        
+    }
+
+    #timers {
+        flex-direction: row;
+        width: 100%;
+        margin-bottom: 10%;
+        margin-top: -10%;
+        padding: 10px;
+        background-color: #b4b4b4;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        border: 1px solid rgb(47,54,61);
+        height: 30px;
+    }
+
+    .timer {
+        
+        width: 45%;
+        text-align: center;
+        color: black;
+        justify-content: center;
+        flex: 1; /* Occupa lo stesso spazio */
+        margin: 0 4%; /* Piccolo margine tra i timer */
+        margin-right: 7%;
+        padding: 2.4px;
+        /*transition: all 0.3s ease;  Animazione per rendere più fluido il passaggio */
+    }
+    #white-minutes, #white-seconds{
+        color: black;
+    }
+    #black-minutes, #black-seconds{
+        color: black;
+    }
+    .timer.active {
+        border: 2px solid #2588bd; /*Evidenzia il timer attivo */
+        border-radius: 5px;
+        /*background-color: #e8f5e9;*/
+        max-width: 50%; /* Limita la larghezza per evitare che il timer occupi troppo spazio */
+        flex: 1; /* Occupa lo stesso spazio */
+    }
+ 
+    #move-history table {
+       margin-top: -1%; 
+       margin-bottom: -2%;
+       width: 100%;
+       border-collapse: collapse;
+       table-layout: fixed;
+    }
+
+    #move-history th, #move-history td {
+        border: 0.1px solid #807a7a84;
+        padding: 7px;
+        text-align: center;
+        width: 50%;
+    }
+
+    #move-history th {
+        background-color: #b4b4b4;
+        color: white;
+        width: 50%;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        /*overflow: auto;*/
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background-color: #b4b4b4;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 400px;
+        text-align: center;
+        
+    }
+
+    button {
+        margin: 10px;
+        padding: 10px 20px;
+        cursor: pointer;
+    }
+
+    #promotionModal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        /*background-color: white;*/
+        border: 1px solid #888;
+        z-index: 1000;
+    }
+
+    .promotion-piece {
+        margin: 5px;
+        padding: 10px;
+        cursor: pointer;
+    }
+  
+  
+
+</style>
+          
+<body>
+    <header>
+        <h1>Banzai Chess</h1>
+        <div id="nav">
+            <a href="battleground.html">Battleground</a>
+            <a href="index.html">Home</a>
+            <img id="theme" width="24" height="24" src="./static/img/modes/light.svg" alt="" />
+        </div>
+    </header>
+
+    <!-- Modale Custom per la richiesta di patta -->
+    <div id="drawModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-text">Il tuo avversario offre una patta. Accetti?</span>
+            <button id="acceptDrawBtn">Accetta</button>
+            <button id="rejectDrawBtn">Rifiuta</button>
+        </div>
+    </div>
+
+    <!-- Modale Custom per il Ritiro Mossa -->
+    <div id="moveModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-text">Il tuo avversario vuole ritirare l'ultima mossa. Accetti?</span>
+            <button id="acceptMoveBtn">Accetta</button>
+            <button id="rejectMoveBtn">Rifiuta</button>
+        </div>
+    </div>
+
+    <!-- Modale Custom per la Resa -->
+    <div id="resignModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-text">Vuoi davvero arrenderti?</span>
+            <button id="confirmResignBtn">Sì</button>
+            <button id="cancelResignBtn">No</button>
+        </div>
+    </div>
+
+    <!-- Modale Custom per la Promozione -->
+    <div id="promotionModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-text">Scegli il pezzo per la promozione:</span>
+            <div id="promotion-options">
+                <div id="black-options">                    
+                    <img src="static/img/chesspieces/wikipedia/bR.png" alt="TorreNera" id="black-rook" class="promotion-piece" data-piece="r" />
+                    <img src="static/img/chesspieces/wikipedia/bB.png" alt="AlfiereNero" id="black-bishop" class="promotion-piece" data-piece="b" />
+                    <img src="static/img/chesspieces/wikipedia/bN.png" alt="CavalloNero" id="black-knight" class="promotion-piece" data-piece="n" />
+                    <img src="static/img/chesspieces/wikipedia/bQ.png" alt="ReginaNera" id="black-queen" class="promotion-piece" data-piece="q" />
+                </div>
+                <div id="white-options">
+                    <img src="static/img/chesspieces/wikipedia/wR.png" alt="TorreBianca" id="white-rook" class="promotion-piece" data-piece="r" />      
+                    <img src="static/img/chesspieces/wikipedia/wB.png" alt="AlfiereBianco" id="white-bishop" class="promotion-piece" data-piece="b" />                    
+                    <img src="static/img/chesspieces/wikipedia/wN.png" alt="CavalloBianco" id="white-knight" class="promotion-piece" data-piece="n" />
+                    <img src="static/img/chesspieces/wikipedia/wQ.png" alt="ReginaBianca" id="white-queen"class="promotion-piece" data-piece="q" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutto il resto -->
+    <div id="container">
+
+        <div id="left-column">
+            <div id="content">
+                <div id="board"></div>
+                <div id="room-join-state"></div>              
+            </div>          
+        </div>
+
+        <div id="central-column">
+            <div id="game-controls">
+            
+                <div id="timers">
+                    <div class="timer" id="white-timer">
+                        <!-- Bianco:--> <span id="white-minutes">--</span>:<span id="white-seconds">--</span>
+                    </div>
+                    <div class="timer" id="black-timer">
+                        <!-- Nero:-->  <span id="black-minutes">--</span>:<span id="black-seconds">--</span>
+                    </div>
+                </div> 
+
+                <div id="move-history">
+                   
+                    <table id="moves-table">
+                        <thead>
+                            <tr>
+                                <th>WHITE</th>
+                                <th>BLACK</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div> 
+                <div id="central-buttons">
+                    <button class="central-button" id="rotate" hidden>Rotate</button> 
+                    <button class="central-button" id="share-link">Share Link</button>  
+                    <button class="central-button" id="save-game" disabled>Save Game</button>
+                </div>
+            </div>         
+        </div>
+
+        <div id="right-column">
+            <div id="right-buttons">
+                <button class="right-button" id="offer-draw">Draw</button>
+                <button class="right-button" id="resign">Resign</button>
+                <button class="right-button" id="undo-move" disabled>Takeback</button>
+            </div>
+            
+        </div>       
+    </div>
+
+    <script src="./static/js/jquery-3.6.0.min.js"></script>
+    <script src="./static/js/js.cookie.js"></script>
+    <script src="./static/js/theme.js"></script>
+    <script src="./static/js/chess-0.12.0.js"></script>
+    <script src="./static/js/chessboard-1.0.0.js"></script>
+    <script src="./static/js/socket.io-4.3.1.js"></script>
+    <!--<script src="./static/js/timer.js"></script>-->
+    <script src="./static/js/rooms.js"></script>
+    
+
+
+    <script> // send request to /api/games/{gameId} + Share Link & Save Game
+        
+        function getGameData() {
+            var urlParams = new URLSearchParams(window.location.search);
+            const key = urlParams.get("key1") || urlParams.get("key2")|| urlParams.get("spectatorKey");
+            const gameId = urlParams.get("gameId");
+            $.ajax({
+                url: `/api/games/${gameId}?key=${key}`,
+            }).done(function (body) {
+                let gameId = body.gameId;
+                let [key1, key2] = body.players;
+                let spectatorKey = body.spectator;
+                let shareUrl = `http://localhost:3000/rooms.html?gameId=${gameId}&key2=${key2}`;
+                //console.log("Spectator URL:",`http://localhost:3000/rooms.html?gameId=${gameId}&spectatorKey=${spectatorKey}`)
+                // Assegna il link al pulsante "Condividi Link"
+                $("#share-link").data("link", shareUrl);  
+            });
+        }
+
+        $(document).ready(function () {
+            getGameData();
+
+            // Funzione per copiare il link negli appunti
+            $("#share-link").click(function () {
+                const link = $(this).data("link");
+                if (link) {
+                    // Usa l'API Clipboard
+                    navigator.clipboard.writeText(link).then(function () {
+                        alert("Link copiato negli appunti!");
+                    }, function (err) {
+                        console.error("Errore durante la copia del link: ", err);
+                    });
+                } else {
+                    alert("Il link non è disponibile. Riprova più tardi.");
+                }
+            });
+
+            // Funzione per gestire il clic su "Salva Partita"
+            $("#save-game").click(function () {               
+                const moves = getMovesFromDOM();
+                const fen = currentFEN || 'N/A';
+                const content = `Moves Hystory:\n${moves}\n\nFinal Position FEN:\n${fen}`;
+                const filename = `Banzai_Chess_Game_${getFormattedDate()}.txt`;
+                saveGameFile(content, filename);
+                disableButton("save-game");
+            });
+        });
+
+        // Funzione per ottenere le mosse dal DOM
+        function getMovesFromDOM() {
+            const movesTable = document.getElementById("moves-table").getElementsByTagName("tbody")[0];
+            const moves = [];
+            let moveNumber = 1; // Inizia il conteggio delle mosse
+            let moveLine = ""; // Stringa per la riga di mosse corrente
+
+            for (let i = 0; i < movesTable.rows.length; i++) {
+                const cells = movesTable.rows[i].cells;
+                const whiteMove = cells[0].textContent.trim();
+                const blackMove = cells[1].textContent.trim();
+
+                if (whiteMove) {
+                    moveLine += `${moveNumber}.${whiteMove} `;
+                }
+                if (blackMove) {
+                    moveLine += `${blackMove}`;
+                    moves.push(moveLine.trim()); // Aggiungi la linea completa alla lista
+                    moveLine = ""; // Resetta la linea per la prossima mossa
+                    moveNumber++; // Incrementa il numero di mossa dopo un turno completo
+                } else {
+                   // Se non c'è mossa nera, aggiungi la mossa bianca come singola
+                   moves.push(moveLine.trim());
+                   moveLine = ""; // Resetta la linea
+                   moveNumber++; // Incrementa il numero di mossa per la mossa bianca singola
+                }
+            }
+            return moves.join("\n"); // Unisci le righe con nuove linee
+        }
+
+        // Funzione per salvare il file
+        function saveGameFile(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Funzione per ottenere la data e l'ora formattate
+        function getFormattedDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            // Formatta la data e l'ora nel formato desiderato
+            return `${day}_${month}_${year}_${hours}_${minutes}`;
+        }
+        
+    </script>
+
+    <script>  //Listener Bottoni 
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // Listener per Abbandonare
+            document.getElementById("resign").addEventListener("click", resign);
+            // Listener per Offrire Patta
+            document.getElementById("offer-draw").addEventListener("click", function () {
+                if (!disabledButtons.has("offer-draw")) {
+                    offerDraw();
+                    disableButton("offer-draw");
+                    //updateButtonStates(); // Aggiorna lo stato dei pulsanti
+                }
+            });           
+            // Listener per Ritirare Mossa
+            document.getElementById("undo-move").addEventListener("click", function () {
+                if (!disabledButtons.has("undo-move")) {
+                    undoMove();
+                    disableButton("undo-move");
+                    //updateButtonStates(); // Aggiorna lo stato dei pulsanti
+                }
+            });
+            // Listener per Ruotare scacchiera
+            document.getElementById("rotate").addEventListener("click", rotate); 
+
+            function rotate() {
+                if (board.orientation() === 'white') {
+                    board.orientation('black');
+                } else {
+                    board.orientation('white');
+                }
+            }
+            // Altri listener...
+        });
+        
+    </script>
+
+</body>
+
+</html>

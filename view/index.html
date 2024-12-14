@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,maximum-scale=1,minimum-scale=1" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="ScreenOrientation" content="autoRotate:disabled" />
+        <meta name="description" content="An implementation of chess." />
+        <title>Banzai Chess</title>
+        <link rel="stylesheet" href="./static/css/index.css" />
+        <link rel="stylesheet" href="./static/css/chessboard-1.0.0.css" />
+        <!-- Inclusione di Bootstrap e altri CSS -->
+         <!-- Bootstrap CSS -->
+        
+        <style> 
+
+            #logo {
+                width: 48px; /* Regola la dimensione dell'icona */
+                height: 48px; /* Regola la dimensione dell'icona */
+                margin-right: 0.7em; /* Aggiungi spazio tra l'icona e il titolo */
+                margin-left: -1em;
+            }
+            #title {
+                
+                margin-left: -4%;
+            }
+            
+            div#container {
+                display: flex;
+                height: auto;
+                width: calc(100% - 4em);
+                margin-top: auto;
+                /*align-items: flex-start; /* Allinea gli elementi in alto*/ 
+            }
+            div#content {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                
+            }
+
+            #left-column, #central-column, #right-column {
+                /*flex: 1;*/
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                
+            }
+            #left-column {
+                flex-basis: 20%; /* Larghezza della colonna di sinistra */
+                /*margin-right: 5px; /* Spazio tra le colonne */
+                
+            }
+            div#right-controls {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                margin-right: 70%;
+                margin-left: 10%; 
+                margin-top: auto;            
+            }      
+            .special.copy {
+                margin-bottom: 50px;
+                width: 250px;
+                margin-left: 0px;
+                cursor: pointer; 
+            }
+            #central-column {
+                flex-basis: 50%; /* Larghezza della colonna centrale */
+                justify-content: flex-start;
+                justify-self: center;
+                align-items: center;  
+                      
+            }
+
+            #right-column {
+                flex-basis: 30%; /* Larghezza della colonna di destra */
+                margin-left: 0 px; /* Spazio tra le colonne */
+            }
+            #left-buttons {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start; 
+                margin-left: -50%;
+                margin-top: -12%;
+                margin-right: 5%;
+                        
+            }
+
+            .left-button {
+                margin-bottom: 10px; /* Spazio tra i bottoni */
+                padding: 5px 10px;
+                font-size: 12px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                width: 100px;
+                /*margin-bottom: 10px;
+                padding: 5px 10px;
+                font-size: 14px;*/                   
+            }
+            .left-button:hover {
+                background-color: rgb(47,54,61);
+                 /*color: black;*/
+            }
+
+            div#board {
+                /*margin-right: -10%;*/
+                margin-left: -60%;
+                margin-top: -2%;
+                width: 70%;
+                height: 70%;
+                                   
+            }
+            #status-wrapper {
+               display: flex;
+               justify-content: center;
+               align-items: center;
+               margin-top: 20px;
+               
+            }
+            #status {
+                
+                margin-left: -61%;
+                margin-top: 10px;
+                /* Spazio tra il label e il div status */                     
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                /*overflow: auto;*/
+                background-color: rgb(0,0,0);
+                background-color: rgba(0,0,0,0.4);
+            }
+
+            .modal-content {
+                background-color: #b4b4b4;
+                margin: 15% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+                max-width: 400px;
+                text-align: center;
+        
+            }
+
+            #promotionModal {
+
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                border: 1px solid #888;
+                z-index: 1000;
+            }
+
+            .promotion-piece {
+               margin: 5px;
+               padding: 10px;
+               cursor: pointer;
+            } 
+
+            /* Modale personalizzata per creazione partite */
+            #play-with-friend-modal {
+                display: none; /* Nascondi la modale di default */
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5); /* Sfondo semi-trasparente */               
+                justify-content: center;
+                align-items: center;
+               
+                 
+            }
+
+            #play-with-friend-modal .play-modal-content {
+                background-color: rgb(163, 155, 121);
+                padding: 20px;
+                border-radius: 5px;
+                width: 80%;
+                max-width: 300px;
+                max-height: 600px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+                margin-right: 2%;
+                color: black;
+                display: flex; /* Necessario per centrare il contenuto interno */
+                flex-direction: column; /* Imposta la direzione verticale per gli elementi */
+                justify-content: center; /* Centra il contenuto internamente */
+                align-items: center; /* Centra gli elementi interni */
+                text-align: center; /* Centra il testo */
+                
+            }
+
+             /* Pulsante per chiudere la modale */
+            #play-with-friend-modal .close-btn {
+                
+                top: 10px;
+                right: 60%;
+                cursor: pointer;
+            }
+
+            /* Modale personalizzata per creazione partite */
+            #play-AI-modal {
+                display: none; /* Nascondi la modale di default */
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5); /* Sfondo semi-trasparente */               
+                justify-content: center;
+                align-items: center;
+               
+                 
+            }
+
+            #play-AI-modal .play-AI-modal-content {
+                background-color: rgb(163, 155, 121);
+                padding: 20px;
+                border-radius: 5px;
+                width: 80%;
+                max-width: 300px;
+                max-height: 600px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+                margin-right: 2%;
+                color: black;
+                display: flex; /* Necessario per centrare il contenuto interno */
+                flex-direction: column; /* Imposta la direzione verticale per gli elementi */
+                justify-content: center; /* Centra il contenuto internamente */
+                align-items: center; /* Centra gli elementi interni */
+                text-align: center; /* Centra il testo */
+                
+            }
+
+             /* Pulsante per chiudere la modale */
+            #play-AI-modal .close-btn {
+                
+                top: 10px;
+                right: 60%;
+                cursor: pointer;
+            }
+
+        </style>
+        
+    </head>
+    <body>
+        <header>
+            <div id="logo-title">
+                <img id="logo" src="./static/img/logo.png" alt="Logo" hidden/>
+                <h1 id="title">Banzai Chess</h1>
+                </div>
+            <div id="nav">
+                <a hidden href="battleground.html">Battleground</a>
+                <img id="theme" width="24" height="24" src="modes/light.svg" alt="" />
+            </div>
+        </header>
+
+        <!-- Modale Custom per la Promozione -->
+    <div id="promotionModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-text">Scegli il pezzo per la promozione:</span>
+            <div id="promotion-options">
+                <div id="black-options">                    
+                    <img src="static/img/chesspieces/wikipedia/bR.png" alt="TorreNera" id="black-rook" class="promotion-piece" data-piece="r" />
+                    <img src="static/img/chesspieces/wikipedia/bB.png" alt="AlfiereNero" id="black-bishop" class="promotion-piece" data-piece="b" />
+                    <img src="static/img/chesspieces/wikipedia/bN.png" alt="CavalloNero" id="black-knight" class="promotion-piece" data-piece="n" />
+                    <img src="static/img/chesspieces/wikipedia/bQ.png" alt="ReginaNera" id="black-queen" class="promotion-piece" data-piece="q" />
+                </div>
+                <div id="white-options">
+                    <img src="static/img/chesspieces/wikipedia/wR.png" alt="TorreBianca" id="white-rook" class="promotion-piece" data-piece="r" />      
+                    <img src="static/img/chesspieces/wikipedia/wB.png" alt="AlfiereBianco" id="white-bishop" class="promotion-piece" data-piece="b" />                    
+                    <img src="static/img/chesspieces/wikipedia/wN.png" alt="CavalloBianco" id="white-knight" class="promotion-piece" data-piece="n" />
+                    <img src="static/img/chesspieces/wikipedia/wQ.png" alt="ReginaBianca" id="white-queen"class="promotion-piece" data-piece="q" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="container">
+        <div id="left-column">           
+            <div id="left-buttons">
+                <button id="Restart" class="left-button">RESTART</button>
+                <button id="UndoMove" class="left-button">UNDO</button>
+                <button id="Rotate" class="left-button">ROTATE</button>
+            </div>
+            
+        </div>
+        
+        <div id="central-column">
+            <div id="content">
+                <div id="board"></div>           
+                <div id="status"></div>
+            </div>
+        </div>                
+
+            <div id="right-column">
+                <div id="right-controls">
+                    <button id="learn-the-rules" class="special copy">Learn the Rules</button>
+                    <button id="play-AI" class="special copy" > Play the AI!
+                        </button>
+                    <button id="play-friend" class="special copy">Play
+                        with a
+                        Friend</button>
+                    <!-- Aggiungi altri bottoni qui onclick="location.href='AIroom.html'"-->
+                </div>
+
+                <div id="popup" class="popup"> <!-- Finestra POPUP per le regole-->
+                    <div class="popup-content">
+                        <span class="close-btn">&times;</span>
+                        <div class="popup-page " id="page-1">
+                            <h2>PUSH Rule</h2>
+                            <p> Pieces can move to a square occupied by other friendly pieces, pushing them. <br /> <br /> 
+                                The pushed piece is moved to an adjacent square according to the direction of the initial piece's movement.                             
+                                To execute a push the destination square must be empty. <br /> <br /> 
+                                Each piece pushes the same way it moves, except knights which push diagonally.</p>
+                        </div>
+                        <div class="popup-page" id="page-2">
+                            <h2>BOUNCE Rule</h2>
+                            <p> A piece on the edge pushed diagonally can bounce inward. <br /> <br />                                                                                    
+                                The bounce operates as a push, meaning the piece will move one square if that square is empty, but with a new trajectory.                              
+                                The bounce direction is simply the diagonal push direction reflected towards the inside of the chessboard. <br /> <br />
+                                The Bounce is a sub-rule of the Push. Indeed, only a pushed piece can bounce. </p>
+                        </div>
+                        <div class="popup-page" id="page-3">
+                            <h2>Pawns' Rules</h2>
+                            <p>The third and final addition concerns pawns' mobility and promotion. <br />   <br />                           
+                                - Pawns can advance 2 steps, even if they have already moved, as long as they are on their respective first two ranks colorwise. <br />                                 
+                                - Pawns can perform the En Passant capture even on the third and sixth ranks. <br /> 
+                                - Pawns that reach promotion via push (or bounce) cannot become queens. </p>
+                        </div>
+                        <div class="popup-page" id="page-4">
+                            <h2>EXTRA</h2>
+                            <p>Additionally, it may be good to know that:  <br /><br />
+                                A pinned piece can't move but can still be pushed. <br />
+                                A king in check can push and be pushed. <br />
+                                A piece in the corner can't be pushed. <br />
+                                It is not possible to capture while pushing. <br /> <br />
+                                Note that these are not real rules but rather effects of the game logic.</p>
+                        </div>
+                        <div class="popup-page" id="page-5">
+                            <h2>Banzai</h2>
+                            <p>Summing up, these are the Rules of Banzai Chess:  <br /> <br />
+                                1 Pieces can move to a square occupied by other friendly pieces, pushing them. <br />
+                                2 A piece on the edge pushed diagonally can bounce inward. <br />
+                                3 Pawns on their respective first 2 ranks can always advance 2 steps. <br />
+                                4 Pawns can capture En Passant also on the third and sixt rank. <br />
+                                5 Pawns pushed to Promotion can only Underpromote.</p>
+                        </div>
+                        <div class="popup-navigation">
+                            <button id="prev-btn">Back</button>
+                            <button id="next-btn">Forward</button>
+                        </div>
+                    </div>
+                </div>              
+            </div>
+        </div>
+
+        <!-- Modale per partite custom -->
+        <div id="play-with-friend-modal" class="hidden">
+            <div class="play-modal-content" >
+               <span id="close-modal-btn" class="close-btn"><!--&times;--></span>
+                <h5 class="modal-title" id="playWithFriendModalLabel">CREATE A NEW GAME</h5>
+                <!-- <p>Scegli le impostazioni:</p>-->
+                <form id="create-game-form" method="POST" action="/api/games/new">
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Check to play with black</label>
+                        <input type="checkbox" id="color" class="form-check-input" name="color">
+                    </div><br>
+                    <div class="mb-3">
+                        <label for="time">Fast Time Setting:</label>
+                        <output id="selectedtime"></output> minutes<br>
+                        <input type="range" value="0" min="0" max="20" step="5" id="time" name="time">
+                    </div>
+                    <div>
+                        <input type="number" id="increment" name="increment" value="0" min="0" max="60" />
+                        <label for="increment">Increment (in seconds)</label>
+                        
+                    </div>
+                    <div>
+                        <label for="movetime">Time per move (in minutes)</label>
+                        <input type="number" id="movetime" name="movetime" value="0" min="0" max="5" steps="1" />
+                        
+                        
+                    </div>
+                    <div>
+                        <input type="number" id="totaltime" name="totaltime" value="0" min="0" max="90"  />
+                        <label for="totaltime">Custom Time (in minutes)</label>
+                        
+                    </div>
+                    <div><br>
+                        <label for="fen">Start from position (Insert FEN)</label> <br>
+                        <input type="text" id="fen" name="fen" />
+                        <br><span id="fen-error" style="color:rgba(218, 14, 14, 0.949);display:none;">Invalid FEN</span>
+                    </div><br>
+                    <button id="play-friend-btn" class="btn btn-primary" type="submit">New Game</button>
+                </form>
+            </div>
+        </div>
+
+         <!-- Modale per partite contro AI-->
+         <div id="play-AI-modal" class="hidden">
+            <div class="play-AI-modal-content" >
+               <span id="close-AI-modal-btn" class="close-btn"><!--&times;--></span>
+                <h5 class="modal-title" id="playWithAIModalLabel">CREATE A NEW GAME</h5>
+                <!-- <p>Scegli le impostazioni:</p>-->
+                <form id="new-AI-game-form" method="POST" action="/api/ai/new">
+                    <div class="mb-3">
+                        <label for="pcolor" class="form-label">Check to play with black</label>
+                        <input type="checkbox" id="pcolor" class="form-check-input" name="pcolor">
+                    </div><br>
+                    <div class="mb-3">
+                        <label for="AI-level">AI Level:</label>
+                        <output id="AI-depth"></output><br>
+                        <input type="range" value="3" min="2" max="4" step="1" id="depth" name="depth">
+                    </div>
+                    <!--<div>
+                        <input type="number" id="increment" name="increment" value="0" min="0" max="60" />
+                        <label for="increment">Increment (in seconds)</label>
+                        
+                    </div>
+                    <div>
+                        <label for="movetime">Time per move (in minutes)</label>
+                        <input type="number" id="movetime" name="movetime" value="0" min="0" max="5" steps="1" />
+                        
+                        
+                    </div>
+                    <div>
+                        <input type="number" id="totaltime" name="totaltime" value="0" min="0" max="90"  />
+                        <label for="totaltime">Custom Time (in minutes)</label>
+                        
+                    </div>-->
+                    <div>
+                        <label for="nfen">Start from position (Insert FEN)</label> <br>
+                        <input type="text" id="nfen" name="nfen" />
+                        <br><span id="nfen-error" style="color:rgba(218, 14, 14, 0.949);display:none;">Invalid FEN</span>
+                    </div><br>
+                    <button id="play-AI-btn" class="btn btn-primary" type="submit">New Game</button>
+                </form>
+            </div>
+        </div>
+        </div>       
+        </div>
+        <script src="./static/js/jquery-3.6.0.min.js"></script>
+        <script src="./static/js/js.cookie.js"></script>
+        <script src="./static/js/theme.js"></script>
+        <script src="./static/js/chess-0.12.0.js"></script>
+        <script src="./static/js/chessboard-1.0.0.js"></script>
+        <script src="./static/js/socket.io-4.3.1.js"></script>
+        <script src="./static/js/fenvalidator.js"></script>
+        
+
+        <script> //Robe varie
+            function createGame() {
+                window.location.href = '/rooms.html';
+            }
+
+            //const myModal = $('#play-with-friend-modal');
+            //const myInput = document.getElementById('play-with-friend-button');
+            //myModal.addEventListener('shown.bs.modal', () => {
+            //myInput.focus()
+            //})
+            const level = document.querySelector("#AI-depth");
+            const depth = document.querySelector("#depth");
+            level.textContent = depth.value;
+            depth.addEventListener("input", (event) => {
+                level.textContent = event.target.value;
+            });
+            
+            const value = document.querySelector("#selectedtime");
+            const input = document.querySelector("#time");
+            value.textContent = input.value;
+            input.addEventListener("input", (event) => {
+                 value.textContent = event.target.value;
+            });
+
+            // Nascondi l'errore Invalid fen su qualsiasi click
+            document.addEventListener("DOMContentLoaded", function () {
+                const fenError = document.getElementById('fen-error');
+                let errorTimeout;
+                document.addEventListener('click', () => {
+                    fenError.style.display = 'none';
+                    clearTimeout(errorTimeout); // Cancella il timeout per evitare conflitti
+                }); 
+            });      
+            
+            // Funzione rapida per validare la FEN
+            //function isValidFEN(fen) {
+                //const fenRegex = /^(\s*[prnbqkPRNBQK1-8]+\/){7}\s*[prnbqkPRNBQK1-8]+\s+[wb]\s+(-|[KQkq]+)\s+(-|[a-h][36])\s+(\d+)\s+(\d+)$/;
+                //return fenRegex.test(fen);
+            //}
+
+            //Funzione per gestire Modale Promozione
+            function showPromotionModal(playerColor, isPushPromotion) {
+                return new Promise((resolve) => {
+                    // Mostra la modale
+                    const modal = document.getElementById('promotionModal');
+                    modal.style.display = 'block';
+
+                    // Nascondi tutte le opzioni
+                    document.getElementById('black-options').style.display = 'none';
+                    document.getElementById('white-options').style.display = 'none';
+
+                    // Mostra solo le opzioni pertinenti
+                    let optionsSelector;
+                    if (playerColor === 'w') {
+                       optionsSelector = '#white-options';
+                    } else {
+                       optionsSelector = '#black-options';
+                    }
+    
+                    const optionsContainer = document.querySelector(optionsSelector);
+                    optionsContainer.style.display = 'block';
+
+                    // Nascondi la regina se è una promozione tramite spinta
+                    if (isPushPromotion) {
+                       optionsContainer.querySelector('[data-piece="q"]').style.display = 'none';
+                    } else {
+                       optionsContainer.querySelector('[data-piece="q"]').style.display = 'inline';
+                    }
+
+                    // Gestione della scelta del pezzo
+                    let chosenPiece = "";
+                    optionsContainer.querySelectorAll('.promotion-piece').forEach(piece => {
+                        piece.onclick = () => {
+                            chosenPiece = piece.getAttribute('data-piece');
+                            //console.log("Chosen Piece:", chosenPiece);    
+                            modal.style.display = 'none';
+                            resolve(chosenPiece); // Risolve la promise con il pezzo scelto
+                        };
+                    });
+                });
+            }
+
+        </script>
+
+            <script> //FORM  NUOVA PARTITA AI
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const AIform = document.getElementById('new-AI-game-form');
+                const fenInput = document.getElementById('nfen');
+                const fenError = document.getElementById('nfen-error');
+                //const depthValue = depth.value;
+                let errorTimeout;
+                document.getElementById("new-AI-game-form").addEventListener("submit", function (event) {
+                    event.preventDefault();
+
+                    const isBlack = document.getElementById("pcolor").checked;
+                    const fen = document.getElementById("nfen").value || "start"; // Ottieni il valore della FEN
+                    console.log(fen);
+
+                    if(fen !== "start") {
+
+                        const isValid = parseFEN(fen);
+                        console.log("Valid fen?", isValid);
+
+                        if (fen && isValid===false) {
+                            // Se la FEN è invalida, mostra l'errore e blocca l'invio del form
+                            fenError.style.display = 'inline';
+                            event.preventDefault();
+                            console.log("Invalid Fen");
+                            // Nascondi l'errore dopo 3 secondi
+                            clearTimeout(errorTimeout);
+                            errorTimeout = setTimeout(() => {
+                                fenError.style.display = 'none';
+                            }, 3000);
+                            return;
+                        } else {
+                           // Nascondi l'errore se la FEN è valida o vuota
+                           fenError.style.display = 'none';
+                           console.log("Valid Fen");
+                        }
+                    }
+
+                    const formData = new FormData(this);
+                    formData.append("isBlack", isBlack);
+                    //formData.append("depth", depthValue); // Aggiungi il valore della profondità
+
+                    // Rimuovi la FEN se già esiste nel formData (per evitare doppioni)
+                    if (formData.has("nfen")) {
+                        formData.delete("nfen");
+                    }
+                    formData.append("nfen", fen); // Aggiungi la FEN al form data
+
+                    fetch(this.action, {
+                        method: this.method,
+                        body: new URLSearchParams(formData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+
+                        if (data.success) {
+                            window.location.href = data.roomUrl; // Naviga alla nuova pagina
+                        } else if (data.error) {
+                            // Se c'è un errore nella FEN, visualizza il messaggio di errore
+                            fenError.textContent = data.error;
+                            fenError.style.display = "block";
+                            // Nascondi l'errore dopo 3 secondi
+                            clearTimeout(errorTimeout);
+                            errorTimeout = setTimeout(() => {
+                                fenError.style.display = 'none';
+                            }, 3000);
+                        } else {
+                            console.error("Unexpected response:", data);    
+                        } 
+                        console.log("Success:", data);
+                        // Gestione della risposta
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                    });
+                });
+            });
+        </script>
+
+        <script> //FORM IMPOSTAZIONI NUOVA PARTITA 
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const form = document.getElementById('create-game-form');
+                const fenInput = document.getElementById('fen');
+                const fenError = document.getElementById('fen-error');
+                
+                let errorTimeout;
+                document.getElementById("create-game-form").addEventListener("submit", function (event) {
+                    event.preventDefault();
+
+                    const isBlack = document.getElementById("color").checked;
+                    const fen = document.getElementById("fen").value || "start"; // Ottieni il valore della FEN
+                    console.log(fen);
+
+                    if(fen !== "start") {
+
+                        const isValid = parseFEN(fen);
+                        console.log("Valid fen?", isValid);
+
+                        if (fen && isValid===false) {
+                            // Se la FEN è invalida, mostra l'errore e blocca l'invio del form
+                            fenError.style.display = 'inline';
+                            event.preventDefault();
+                            console.log("Invalid Fen");
+                            // Nascondi l'errore dopo 3 secondi
+                            clearTimeout(errorTimeout);
+                            errorTimeout = setTimeout(() => {
+                                fenError.style.display = 'none';
+                            }, 3000);
+                            return;
+                        } else {
+                           // Nascondi l'errore se la FEN è valida o vuota
+                           fenError.style.display = 'none';
+                           console.log("Valid Fen");
+                        }
+                    }
+
+                    const formData = new FormData(this);
+                    formData.append("isBlack", isBlack);
+                    //formData.append("depth", depthValue); // Aggiungi il valore della profondità
+
+                    // Rimuovi la FEN se già esiste nel formData (per evitare doppioni)
+                    if (formData.has("fen")) {
+                        formData.delete("fen");
+                    }
+                    formData.append("fen", fen); // Aggiungi la FEN al form data
+
+                    fetch(this.action, {
+                        method: this.method,
+                        body: new URLSearchParams(formData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+
+                        if (data.success) {
+                            window.location.href = data.roomUrl; // Naviga alla nuova pagina
+                        } else if (data.error) {
+                            // Se c'è un errore nella FEN, visualizza il messaggio di errore
+                            fenError.textContent = data.error;
+                            fenError.style.display = "block";
+                            // Nascondi l'errore dopo 3 secondi
+                            clearTimeout(errorTimeout);
+                            errorTimeout = setTimeout(() => {
+                                fenError.style.display = 'none';
+                            }, 3000);
+                        } else {
+                            console.error("Unexpected response:", data);    
+                        } 
+                        console.log("Success:", data);
+                        // Gestione della risposta
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                    });
+                });
+            });
+        </script>
+  
+        <script>  //Chessboard 
+            var board = null;
+            var game = new Chess();  
+            
+            function onDragStart(source, piece, position, orientation) {
+                //console.log(`onDragStart called with piece ${piece} at ${source}`);
+                
+                // do not pick up pieces if the game is over
+                if (game.isGameOver()) return false;
+
+                // only pick up pieces for the side to move
+                if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                    (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                    return false;
+                }
+                
+                
+            }
+
+            const onDrop = async (source, target) => {
+                // Controlla se è una promozione standard
+                 const isPromotion = game.moves({ verbose: true }).filter((move) => move.from === source && move.to === target && move.flags.includes('p')).length > 0;
+                // Controlla se è una promozione con spinta
+                const isPushPromotion = game.moves({ verbose: true }).some((move) => move.from === source && move.to === target && move.subpromotion);
+                const playerColor = game.turn(); // Ottieni il colore del giocatore corrente
+
+                if (isPromotion) {
+                    //console.log("PROMOTION?", isPromotion); 
+
+                    // Rilascio del pedone prima di aprire la modale
+                    setTimeout(async () => {
+                        try {
+                            const promotionpiece = await showPromotionModal(playerColor, false); // Aspetta la scelta dell'utente
+                            if (promotionpiece) {
+                                const move = game.move({ from: source, to: target, promotion: promotionpiece });
+                                board.position(game.fen());
+                                updateStatus()
+                            }
+                        } catch (error) {
+                            console.error("Promotion error:", error);
+                            return "snapback";
+                        }
+                    }, 0);
+
+                } else if (isPushPromotion) {
+                    //console.log("PUSH PROMOTION?", isPushPromotion); 
+
+                    // Rilascio del pedone prima di aprire la modale
+                    setTimeout(async () => {
+                        try {
+                            const subpromotionpiece = await showPromotionModal(playerColor, true); // Aspetta la scelta dell'utente, escludendo la regina
+                            if (subpromotionpiece) {
+                                const move = game.move({ from: source, to: target, subpromotion: subpromotionpiece });
+                                board.position(game.fen());
+                                updateStatus()
+                            }
+                        } catch (error) {
+                            console.error("Push Promotion error:", error);
+                            return "snapback";
+                        }
+                    }, 0);
+                } else {
+                    try {
+                        //console.log("NOT A PROMOTION MOVE");
+                         // Verifica se la mossa è legale
+                        const move = game.move({ from: source, to: target });
+                        updateStatus()
+                    } catch (error) {
+                        console.error("Invalid Move:", error);
+                        return "snapback";
+                    }
+                }
+            };
+
+            // update the board position after the piece snap
+            // for castling, en passant, pawn promotion
+            function onSnapEnd() {
+                board.position(game.fen());
+            }
+
+            function updateStatus() {
+                var status = '';
+                var moveColor = 'White';
+                if (game.turn() === 'b') {
+                    moveColor = 'Black';
+                }
+
+                // checkmate?
+                if (game.isCheckmate()) {
+                    status = 'Game over, ' + moveColor + ' is in checkmate.';
+                }
+
+                // draw?
+                else if (game.isDraw()) {
+                    status = 'Game over, drawn position';
+                }
+
+                // game still on
+                else {
+                    status = moveColor + ' turn';
+
+                    // check?
+                    if (game.inCheck()) {
+                        status += ', ' + moveColor + ' is in check';
+                    }
+                }
+                document.getElementById('status').innerHTML = status;
+                
+            }
+
+            var config = {
+                
+                draggable: true,
+                position: 'start',
+                onDragStart: onDragStart,
+                onDrop: onDrop,
+                onSnapEnd: onSnapEnd
+            };
+            board = Chessboard('board', config);
+            
+            updateStatus();
+        </script>
+
+        <script>  //Rules windows
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const popup = document.getElementById("popup");
+            const learnTheRulesButton = document.getElementById("learn-the-rules");
+            const closeButton = document.querySelector(".close-btn");
+            const prevButton = document.getElementById("prev-btn");
+            const nextButton = document.getElementById("next-btn");
+            let currentPage = 1;
+            const totalPages = 5;
+    
+            learnTheRulesButton.onclick = function() {
+                popup.style.display = "block";
+                showPage(currentPage);
+            };
+    
+            closeButton.onclick = function() {
+                popup.style.display = "none";
+            };
+    
+            prevButton.onclick = function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    showPage(currentPage);
+                }    
+            };
+    
+            nextButton.onclick = function() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    showPage(currentPage);
+                }
+            };
+    
+            function showPage(pageNumber) {
+                const pages = document.querySelectorAll(".popup-page");
+                pages.forEach(page => page.classList.remove("active"));
+                document.getElementById(`page-${pageNumber}`).classList.add("active");
+            }
+    
+            window.onclick = function(event) {
+                if (event.target == popup) {
+                    popup.style.display = "none";
+                }
+            };
+        });
+        </script>
+
+        <script>  //Listener Bottoni 
+
+            document.addEventListener("DOMContentLoaded", function () {
+
+                // Listener per Restart posizione 
+                document.getElementById("Restart").addEventListener("click", () => {
+                    if (game.fen() !== startingPosition) {
+                        restart();
+                    }
+                });
+                // Listener per Ritirare mossa
+                document.getElementById("UndoMove").addEventListener("click", () => {
+                    if (game.fen() !== startingPosition) {
+                        undoMove();
+                    }
+                });
+                // Listener per Ruotare scacchiera
+                document.getElementById("Rotate").addEventListener("click", rotate); 
+
+                // Listener Play With a Friend
+                const playFriendButton = document.getElementById("play-friend");
+                const modal = document.getElementById("play-with-friend-modal");
+                const closeModalButton = document.getElementById("close-modal-btn");
+
+                // Mostra la modale quando si clicca sul pulsante "Play with a Friend"
+                // Funzione per mostrare la modale
+                function showModal() {
+                    modal.style.display = 'flex';
+                    //console.log("Showing Modal");
+                }
+
+                 // Funzione per nascondere la modale
+                function hideModal() {
+                    modal.style.display = 'none';
+                    //console.log("Closing Modal");
+                }
+
+                // Mostra la modale quando si clicca sul pulsante "Play with a Friend"
+                playFriendButton.addEventListener("click", function() {
+                   showModal();
+                });
+
+                // Nascondi la modale quando si clicca sul pulsante di chiusura
+                closeModalButton.addEventListener("click", function() {
+                    hideModal();
+                });
+
+                // Nascondi la modale quando si clicca all'esterno del contenuto della modale
+                window.addEventListener("click", function(event) {
+                    if (event.target === modal) {
+                        hideModal();
+                    }
+                });
+
+                // Listener Play Vs AI
+                const playAIButton = document.getElementById("play-AI");
+                const AImodal = document.getElementById("play-AI-modal");
+                const closeAIModalButton = document.getElementById("close-AI-modal-btn");
+
+                // Mostra la modale quando si clicca sul pulsante "Play with AI"
+                // Funzione per mostrare la modale
+                function showAIModal() {
+                    AImodal.style.display = 'flex';
+                    //console.log("Showing Modal");
+                }
+
+                 // Funzione per nascondere la modale
+                function hideAIModal() {
+                    AImodal.style.display = 'none';
+                    //console.log("Closing Modal");
+                }
+
+                // Mostra la modale quando si clicca sul pulsante "Play with AI"
+                playAIButton.addEventListener("click", function() {
+                   showAIModal();
+                });
+
+                // Nascondi la modale quando si clicca sul pulsante di chiusura
+                closeAIModalButton.addEventListener("click", function() {
+                    hideAIModal();
+                });
+
+                // Nascondi la modale quando si clicca all'esterno del contenuto della modale
+                window.addEventListener("click", function(event) {
+                    if (event.target === AImodal) {
+                        hideAIModal();
+                    }
+                });
+            });
+
+            const startingPosition = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+
+            function restart() {
+                board.position('start');
+                game.load('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+                updateStatus();
+            }
+
+            function undoMove() {
+                game.undo();
+                board.position(game.fen());
+                updateStatus();
+            }
+
+            function rotate() {
+                if (board.orientation() === 'white') {
+                    board.orientation('black');
+                } else {
+                    board.orientation('white');
+                }
+            }
+
+    
+        </script>
+        
+    </body>
+</html>

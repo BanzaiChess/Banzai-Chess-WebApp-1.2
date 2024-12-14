@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,maximum-scale=1,minimum-scale=1" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="ScreenOrientation" content="autoRotate:disabled" />
+        <meta name="description" content="An implementation of chess." />
+        <title>Banzai Chess Battleground</title>
+        <link rel="stylesheet" href="./static/css/index.css" />
+        <link rel="stylesheet" href="./static/css/chessboard-1.0.0.css" />
+    </head>
+    <body>
+        <header>
+            <h1>Banzai Chess</h1>
+            <div id="nav">
+                <a href="battleground.html">Battleground</a>
+                <a href="index.html">Home</a>
+                
+                <img id="theme" width="24" height="24" src="./static/img/modes/light.svg" alt="" />
+            </div>
+        </header>
+
+        <div id="content">
+            <div id="board-wrapper">
+                <div id="board"></div>
+            </div>
+
+            <div id="controls">
+                <div id="room-join">
+                    <p>Enter a room ID:</p>
+                    <input type="number" id="room-join-in" min="0" max="127" />
+                    <br/>
+                    <br/>
+                    <button id="room-join-submit" class="special copy">Join</button>
+                </div>
+                <div id="room-join-info">
+                    <p id="room-join-state"> Not connected </p>
+                </div>
+                <br/>
+                <div id="room-status-wrapper">
+                    <h2>Rooms:</h2>
+                    <div id="room-status">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="./static/js/jquery-3.6.0.min.js"></script>
+        <script src="./static/js/js.cookie.js"></script>
+        <script src="./static/js/theme.js"></script>
+        <script src="./static/js/chess-0.12.0.js"></script>
+        <script src="./static/js/chessboard-1.0.0.js"></script>
+        <script src="./static/js/socket.io-4.3.1.js"></script>
+        <script src="./static/js/index.js"></script>
+
+        <script> //Join Room Url
+            
+            document.getElementById('room-join-submit').addEventListener('click', function() {
+                const roomInput = document.getElementById('room-join-in');
+                if (roomInput) {
+                    const roomId = roomInput.value.trim();
+                    if (roomId !== "") {
+                        window.location.href = `rooms.html?roomId=${roomId}`;
+                    } else {
+                        alert('Please enter a valid room ID');
+                    }
+                } else {
+                    console.error('Room ID input element not found');
+                }
+            });
+
+        </script>
+       
+    </body>
+</html>
